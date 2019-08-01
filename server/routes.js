@@ -7,6 +7,7 @@ module.exports = function(passport) {
     res.send('hello')
   })
 
+
   router.post('/upload_results', async (req, res) => {
     const { location, inputLoc, results } = req.body
     const sr = new ScrapeResult({
@@ -40,6 +41,23 @@ module.exports = function(passport) {
     } catch (e) {
       res.json({ success: false, error: e.message })
     }
+  })
+
+  router.use(function(req, res, next) {
+    if (!req.isAuthenticated()) {
+      res.status(401).json({
+        success: false,
+        error: 'not authenticated'
+      });
+    } else {
+      next();
+    }
+  });
+
+  router.get('/api', (req, res) => {
+    console.log(req.user.id)
+    res.send('in')
+    return
   })
 
   return router

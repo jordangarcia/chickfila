@@ -1,64 +1,105 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
 const pointSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: ['Point'],
-    required: true
+    required: true,
   },
   coordinates: {
     type: [Number],
-    required: true
-  }
-});
+    required: true,
+  },
+})
 
 const ScrapeResultSchema = new Schema({
-  query:{
+  query: {
     type: String,
-    required: true
+    required: true,
   },
   location: {
     type: pointSchema,
-    required: true
+    required: true,
   },
   numResults: {
     type: Number,
-    required: true
+    required: true,
   },
-  results:{
+  results: {
     type: String,
-    required: true
+    required: true,
   },
 })
 
 const RestaurantSchema = new Schema({
   formattedAddress: {
     type: String,
-    required: true
+    required: true,
   },
   location: {
     type: pointSchema,
-    required: true
+    required: true,
   },
   placeId: {
     type: String,
-    required: true
+    required: true,
   },
   rating: {
     type: Number,
-    required: true
+    required: true,
   },
   numRatings: {
     type: Number,
-    required: true
+    required: true,
   },
 
   name: {
     type: String,
-    required: true
+    required: true,
   },
+})
+
+const UserSchema = new Schema({
+  provider_id: {
+    type: String,
+    required: true,
+  },
+
+  firstName: {
+    type: String,
+    required: true,
+  },
+
+  lastName: {
+    type: String,
+    required: true,
+  },
+
+  email: {
+    type: String,
+    required: true,
+  },
+})
+
+const ProviderUserSchema = new Schema({
+  provider: {
+    type: String,
+    enum: ['facebook'],
+    required: true,
+  },
+
+  providerId: {
+    type: String,
+    required: true,
+  },
+
+  displayName: {
+    type: String,
+  }
 })
 
 exports.ScrapeResult = mongoose.model('ScrapeResult', ScrapeResultSchema)
 exports.Restaurant = mongoose.model('Restaurant', RestaurantSchema)
+exports.User = mongoose.model('User', UserSchema)
+exports.ProviderUser = mongoose.model('ProviderUser', ProviderUserSchema)

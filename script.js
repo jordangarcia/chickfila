@@ -1,7 +1,8 @@
 var map
 var service
 var infowindow
-var key = 'AIzaSyAl47PKs4pPRlLgQORJZXkUe0JG1nTy3Zw'
+var key = 'AIzaSyBNDthRBkd8p3QTPD1_2Y6rnjCAoMokN9Y'
+
 
 async function getLocation(input) {
   const req = await fetch(
