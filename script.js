@@ -77,4 +77,24 @@ $('#form').on('submit', async function(e) {
   })
 })
 
+$('#upload').on('click', async function() {
+  const $form = $(this).parents('form')
+  const inputLoc = $form.find('input[name=location]').val()
+
+  const results = window.results[inputLoc]
+  if (!results) {
+    alert('cant find shit to upload')
+  }
+
+  const req = await fetch('http://localhost:4000/upload_results', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(results),
+  })
+  const res = await req.json()
+  console.log('upload success', res)
+})
+
 // initialize()

@@ -7,10 +7,11 @@ const logger = require("morgan");
 const cors = require("cors");
 const app = express();
 const mongoose = require('mongoose')
+const routes = require('./routes')
 
 
+// mongo shit
 const REQUIRED_ENVS = ['MONGODB_URI']
-
 REQUIRED_ENVS.forEach(function(el) {
   if (!process.env[el])
     throw new Error("Missing required env var " + el);
@@ -18,9 +19,12 @@ REQUIRED_ENVS.forEach(function(el) {
 mongoose.connect(process.env.MONGODB_URI);
 mongoose.connection.once("open", () => console.log(`Connected to MongoDB!`));
 
-app.get("/", (req, res) => {
-  res.send("hello");
-});
+app.use(cors())
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// routes
+app.use(routes());
 
 
 // static
