@@ -75,7 +75,7 @@ passport.use(
 
     const user = await User.findOne({ username })
     if (!user) {
-      done(null, false, { message: 'Incorrect username.' })
+      done(null, false, { message: 'Incorrect username or password.' })
       return
     }
 
@@ -84,7 +84,7 @@ passport.use(
     bcrypt.compare(password, user.password, function(err, res) {
       // res == true
       if (!res) {
-        done(null, false, { message: 'Incorrect password.' })
+        done(null, false, { message: 'Incorrect username or password.' })
         return
       }
       // auth has has succeeded

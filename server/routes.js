@@ -11,6 +11,7 @@ module.exports = function(passport) {
   router.get('/login/failure', function(req, res) {
     res.status(401).json({
       success: false,
+      error: req.flash('error')[0]
     })
     return
   })
