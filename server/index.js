@@ -1,6 +1,7 @@
 const fs = require('fs')
 const bodyParser = require('body-parser')
 const fetch = require('node-fetch')
+const bcrypt = require('bcrypt')
 const express = require('express')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')(session)
@@ -11,29 +12,41 @@ const cors = require('cors')
 const app = express()
 const mongoose = require('mongoose')
 const passport = require('passport')
-const FacebookStrategy = require('passport-facebook').Strategy
+const LocalStrategy = require('passport-local')
+const flash = require('connect-flash')
 
 const routes = require('./routes')
-const { ProviderUser } = require('./models')
+const { User } = require('./models')
 
 // mongo shit
-const REQUIRED_ENVS = ['SESSION_SECRET', 'MONGODB_URI', 'FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']
-REQUIRED_ENVS.forEach(function(el) {
+const REQUIRED_ENVS = [
+  'SESSION_SECRET',
+  'MONGODB_URI',
+  'FACEBOOK_APP_ID',
+  'FACEBOOK_APP_SECRET',
+]
+REQUIRED_ENVS.forEach(function(el){
   if (!process.env[el]) throw new Error('Missing required env var ' + el)
 })
 mongoose.connect(process.env.MONGODB_URI)
 mongoose.connection.once('open', () => console.log(`Connected to MongoDB!`))
 
-var IS_DEV = app.get('env') === 'development'
-
+const IS_DEV = app.get('env') === 'development'
 if (IS_DEV) {
   mongoose.set('debug', true)
 }
 
 app.use(cors())
+app.use(flash())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(morgan('combined'))
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'fake secret',
+    store: new MongoStore({ mongooseConnection: mongoose.connection }),
+  }),
+)
 
 passport.serializeUser(function(user, cb) {
   console.log('serializeUser', user)
@@ -42,7 +55,7 @@ passport.serializeUser(function(user, cb) {
 
 passport.deserializeUser(async function(obj, cb) {
   console.log('deserializeUser', obj)
-  const user = await ProviderUser.findById(obj)
+  const user = await User.findById(obj)
   if (!user) {
     cb('not found')
     return
@@ -51,54 +64,37 @@ passport.deserializeUser(async function(obj, cb) {
   cb(null, user)
 })
 
-var mongoStore = new MongoStore({ mongooseConnection: mongoose.connection })
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || 'fake secret',
-    store: mongoStore,
+// passport strategy
+passport.use(
+  new LocalStrategy(async function(username, password, done) {
+    console.log('authenticating', username,password)
+    if (typeof username !== 'string') {
+      done(null, false, { message: 'User must be string.' })
+      return
+    }
+
+    const user = await User.findOne({ username })
+    if (!user) {
+      done(null, false, { message: 'Incorrect username.' })
+      return
+    }
+
+    // if no user present, auth failed
+    // if passwords do not match, auth failed
+    bcrypt.compare(password, user.password, function(err, res) {
+      // res == true
+      if (!res) {
+        done(null, false, { message: 'Incorrect password.' })
+        return
+      }
+      // auth has has succeeded
+      done(null, user)
+    })
   }),
 )
 
-passport.use(
-  new FacebookStrategy(
-    {
-      clientID: process.env.FACEBOOK_APP_ID,
-      clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: 'http://localhost:4000/auth/facebook/callback',
-    },
-    async function(accessToken, refreshToken, profile, done) {
-      try {
-        let { id, provider, displayName } = profile
-        let user = await ProviderUser.findOne({ providerId: id })
-        if (!user) {
-          const userData = {
-            providerId: id,
-            provider,
-            displayName: displayName,
-          }
-          user = await ProviderUser.create(userData)
-        }
-        console.log('got user', user)
-        done(null, user)
-      } catch (err) {
-        console.log('ERROR', err.message)
-        done(err)
-      }
-    },
-  ),
-)
 app.use(passport.initialize())
 app.use(passport.session())
-
-app.get('/auth/facebook', passport.authenticate('facebook'))
-
-app.get(
-  '/auth/facebook/callback',
-  passport.authenticate('facebook', { failureRedirect: '/login' }),
-  function(req, res) {
-    res.json({ success: true })
-  },
-)
 
 app.get('/auth/failure', (req, res) => {
   console.log('in failure')

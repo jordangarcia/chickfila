@@ -4,11 +4,14 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "server": "nodemon ./bin/www"
+    "server": "nodemon --watch server ./bin/www",
+    "app": "cd app && yarn start"
   },
   "dependencies": {
     "@google/maps": "^0.5.5",
+    "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
+    "connect-flash": "^0.1.1",
     "connect-mongo": "^3.0.0",
     "cors": "^2.8.5",
     "debug": "^4.1.1",
@@ -20,6 +23,7 @@
     "node-fetch": "^2.6.0",
     "nodemon": "^1.19.1",
     "passport": "^0.4.0",
-    "passport-facebook": "^3.0.0"
+    "passport-facebook": "^3.0.0",
+    "passport-local": "^1.0.0"
   }
 }

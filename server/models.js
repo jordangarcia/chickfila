@@ -61,45 +61,38 @@ const RestaurantSchema = new Schema({
 })
 
 const UserSchema = new Schema({
-  provider_id: {
+  username: {
     type: String,
     required: true,
   },
-
-  firstName: {
+  password: {
     type: String,
     required: true,
   },
-
-  lastName: {
-    type: String,
-    required: true,
-  },
-
-  email: {
-    type: String,
-    required: true,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true,
   },
 })
 
-const ProviderUserSchema = new Schema({
-  provider: {
-    type: String,
-    enum: ['facebook'],
-    required: true,
-  },
+// const ProviderUserSchema = new Schema({
+//   provider: {
+//     type: String,
+//     enum: ['facebook'],
+//     required: true,
+//   },
 
-  providerId: {
-    type: String,
-    required: true,
-  },
+//   providerId: {
+//     type: String,
+//     required: true,
+//   },
 
-  displayName: {
-    type: String,
-  }
-})
+//   displayName: {
+//     type: String,
+//   },
+// })
 
 exports.ScrapeResult = mongoose.model('ScrapeResult', ScrapeResultSchema)
 exports.Restaurant = mongoose.model('Restaurant', RestaurantSchema)
 exports.User = mongoose.model('User', UserSchema)
-exports.ProviderUser = mongoose.model('ProviderUser', ProviderUserSchema)
